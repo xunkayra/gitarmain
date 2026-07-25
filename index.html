@@ -920,7 +920,13 @@ async function connectLibrary(code, silent){
     }
   }catch(e){
     console.error('İlk senkronizasyon hatası', e);
-    if(!silent) alert('Bağlanılamadı — internet bağlantını ve kodu kontrol et.');
+    if(!silent){
+      const msg = document.getElementById('libSyncMsg');
+      const detail = (e && (e.code || e.message)) || 'bilinmeyen hata';
+      const text = `Bağlanılamadı (${detail}). Büyük ihtimalle Firebase konsolunda Firestore → Rules kuralları kapalı kalmış — Rules sekmesine gidip "allow read, write: if true;" ile geçici olarak aç.`;
+      if(msg){ msg.style.color = 'var(--danger)'; msg.textContent = text; }
+      else alert(text);
+    }
     return;
   }
 
@@ -1035,16 +1041,6 @@ function renderLibraryView(){
       <div class="save-msg" id="libSyncMsg">${currentCode ? `Bağlı: <b>${currentCode}</b> — değişiklikler otomatik senkronize oluyor.` : 'Şu an bağlı değil — şarkılar sadece bu cihazda.'}</div>
       ${currentCode ? `<button class="tab-mini-btn" id="libDisconnectBtn" style="margin-top:10px;">Bağlantıyı Kes</button>` : ''}
 
-      <div class="add-sub" style="margin-top:24px;">
-        Alternatif: internetin yoksa ya da tek seferlik aktarım istersen, dosya olarak da yedek alıp yükleyebilirsin.
-      </div>
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px;">
-        <button class="tab-mini-btn" id="libExportBtn" style="padding:11px 22px;">Dışa Aktar (Yedek İndir)</button>
-        <button class="tab-mini-btn" id="libImportBtn" style="padding:11px 22px;">İçe Aktar (Yedek Yükle)</button>
-        <input type="file" id="libImportFile" accept="application/json" style="display:none;">
-      </div>
-      <div class="save-msg" id="libMsg"></div>
-
       <div class="section-title" style="margin:26px 0 14px 0;">Eklediğin Şarkılar <small>${CUSTOM_SONGS.length} şarkı</small></div>
       <div class="card-grid" id="libCardGrid"></div>
     </div>
@@ -1065,49 +1061,6 @@ function renderLibraryView(){
   const grid = document.getElementById('libCardGrid');
   grid.innerHTML = CUSTOM_SONGS.length ? CUSTOM_SONGS.map(songCard).join('') : '<div style="color:var(--text-faint);font-size:13px;">Henüz şarkı eklemedin.</div>';
   grid.querySelectorAll('.song-card').forEach(c => c.onclick = () => openSong(c.dataset.id));
-
-  document.getElementById('libExportBtn').onclick = () => {
-    const blob = new Blob([JSON.stringify(CUSTOM_SONGS, null, 2)], { type:'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'perde-yedek.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  };
-
-  document.getElementById('libImportBtn').onclick = () => document.getElementById('libImportFile').click();
-  document.getElementById('libImportFile').onchange = (e) => {
-    const file = e.target.files[0];
-    const msg = document.getElementById('libMsg');
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      try{
-        const imported = JSON.parse(reader.result);
-        if(!Array.isArray(imported)) throw new Error('geçersiz format');
-        const existingIds = new Set(CUSTOM_SONGS.map(s => s.id));
-        let added = 0;
-        imported.forEach(song => {
-          if(!song || !song.title) return;
-          if(existingIds.has(song.id)) song.id = song.id + '_' + Date.now().toString(36);
-          CUSTOM_SONGS.push(song);
-          SONGS.push(song);
-          added++;
-        });
-        saveCustomSongs();
-        msg.style.color = 'var(--string)';
-        msg.textContent = `${added} şarkı içe aktarıldı.`;
-        renderLibraryView();
-      }catch(err){
-        msg.style.color = 'var(--danger)';
-        msg.textContent = 'Dosya okunamadı — geçerli bir Perde yedek dosyası (.json) seç.';
-      }
-    };
-    reader.readAsText(file);
-  };
 }
 
 function renderAddSongView(){
