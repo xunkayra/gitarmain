@@ -431,7 +431,8 @@ input[type=range]::-webkit-slider-thumb{
   .meta-pill{ font-size:10.5px; padding:3px 8px; }
   .back-btn{ top:12px; left:12px; }
 
-  .control-bar{ padding:10px 14px; gap:12px; overflow-x:auto; flex-wrap:nowrap; }
+  .control-bar{ padding:10px 14px; gap:10px; flex-wrap:wrap; }
+  .control-bar .ctrl-group[style*="margin-left:auto"]{ margin-left:0 !important; width:100%; justify-content:space-between; }
   .strum-strip{ display:none; }
   .yt-embed-wrap{ margin:0 14px 16px 14px; }
 
@@ -854,21 +855,21 @@ function renderTabDraftPreview(){
 /* =========================================================
    KALICI DEPOLAMA — kullanıcının kendi eklediği şarkılar
 ========================================================= */
-async function loadCustomSongs(){
+function loadCustomSongs(){
   try{
-    const res = await window.storage.get('custom-songs', false);
-    if(res && res.value){
-      CUSTOM_SONGS = JSON.parse(res.value);
+    const raw = localStorage.getItem('perde-custom-songs');
+    if(raw){
+      CUSTOM_SONGS = JSON.parse(raw);
       SONGS.push(...CUSTOM_SONGS);
     }
-  }catch(e){ /* henüz kayıt yok, sorun değil */ }
+  }catch(e){ /* henüz kayıt yok ya da depolama kapalı, sorun değil */ }
   renderPlaylists();
   renderHome();
 }
 
-async function saveCustomSongs(){
+function saveCustomSongs(){
   try{
-    await window.storage.set('custom-songs', JSON.stringify(CUSTOM_SONGS), false);
+    localStorage.setItem('perde-custom-songs', JSON.stringify(CUSTOM_SONGS));
   }catch(e){ console.error('Kaydetme hatası', e); }
 }
 
