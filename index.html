@@ -28,7 +28,7 @@
   --danger:#D9704A;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
-html,body{height:100%; width:100%; overflow-x:hidden; overscroll-behavior-x:none;}
+html,body{height:100%; height:100dvh; width:100%; overflow-x:hidden; overscroll-behavior-x:none;}
 body{
   background:var(--bg);
   color:var(--text);
@@ -47,7 +47,7 @@ input{ font-family:inherit; }
 ::-webkit-scrollbar-thumb{ background:var(--surface3); border-radius:10px; }
 ::-webkit-scrollbar-thumb:hover{ background:var(--wood-dim); }
 
-#app{ display:flex; height:100vh; width:100vw; overflow:hidden; }
+#app{ display:flex; height:100vh; height:100dvh; width:100vw; overflow:hidden; }
 
 /* ---------- SIDEBAR ---------- */
 .sidebar{
@@ -413,10 +413,10 @@ input[type=range]::-webkit-slider-thumb{
 /* ---------- BOTTOM NAV (mobile) ---------- */
 .bottom-nav{ display:none; }
 
-@media (max-width:760px){
+@media (max-width:760px), (max-height:480px) and (orientation:landscape){
   .sidebar{ display:none; }
 
-  #app{ height:calc(100vh - 60px); }
+  #app{ height:calc(100vh - 60px); height:calc(100dvh - 60px); }
   .bottom-nav{
     display:flex; position:fixed; left:0; right:0; bottom:0; height:60px; z-index:30;
     background:var(--surface); border-top:1px solid var(--border);
@@ -475,6 +475,17 @@ input[type=range]::-webkit-slider-thumb{
 @media (max-width:400px){
   .card-grid{ grid-template-columns:repeat(auto-fill, minmax(112px,1fr)); }
   .song-card{ flex:0 0 112px; width:112px; }
+}
+
+@media (max-height:480px) and (orientation:landscape){
+  .song-header{ padding:14px 16px 10px 74px; gap:10px; flex-wrap:wrap; }
+  .song-art-lg{ width:44px; height:44px; position:absolute; left:16px; top:10px; }
+  .song-title-lg{ font-size:16px; margin-bottom:4px; }
+  .song-type{ display:none; }
+  .back-btn{ top:8px; left:8px; padding:5px 10px; font-size:11px; }
+  .control-bar{ padding:6px 14px; gap:8px; }
+  .strum-strip{ display:none; }
+  .song-scroll{ min-height:0; }
 }
 </style>
 </head>
@@ -1562,12 +1573,43 @@ function buildChordLyricLinesHTML(sec, capo){
   }).join('');
 }
 
+function wrapLineToWidth(line, maxChars){
+  if(!line.lyric || line.lyric.length <= maxChars) return [line];
+  const lyric = line.lyric;
+  const out = [];
+  let start = 0;
+  while(start < lyric.length){
+    let end = Math.min(start + maxChars, lyric.length);
+    if(end < lyric.length){
+      const lastSpace = lyric.lastIndexOf(' ', end);
+      if(lastSpace > start) end = lastSpace + 1;
+    }
+    const subLyric = lyric.slice(start, end);
+    const subChords = line.chords
+      .filter(c => c.pos >= start && c.pos < end)
+      .map(c => ({ s: c.s, pos: c.pos - start }));
+    out.push({ lyric: subLyric, chords: subChords });
+    start = end;
+  }
+  return out;
+}
+
+function buildWrappedChordLyricLinesHTML(sec, capo, maxChars){
+  const wrapped = [];
+  sec.lines.forEach(line => wrapped.push(...wrapLineToWidth(line, maxChars)));
+  return buildChordLyricLinesHTML({ lines: wrapped }, capo);
+}
+
 function openChordFullscreen(name, sec, capo){
   document.getElementById('tfmTitle').textContent = name || 'Akorlar';
   const body = document.getElementById('tfmBody');
   body.style.alignItems = 'flex-start';
   const fsize = Math.max(state.fontSize, 17);
-  body.innerHTML = `<div class="chord-lyric-block" style="font-size:${fsize}px; width:max-content;">${buildChordLyricLinesHTML(sec, capo)}</div>`;
+  const availPx = Math.min(window.innerWidth, window.innerHeight) > 0 ? body.clientWidth || window.innerWidth : window.innerWidth;
+  const usableWidth = (window.innerWidth || 400) - 40;
+  const charWidth = fsize * 0.62;
+  const maxChars = Math.max(10, Math.floor(usableWidth / charWidth));
+  body.innerHTML = `<div class="chord-lyric-block" style="font-size:${fsize}px; width:100%;">${buildWrappedChordLyricLinesHTML(sec, capo, maxChars)}</div>`;
   body.querySelectorAll('.chord-tag').forEach(tag => {
     tag.onclick = () => renderChordInspector(tag.dataset.shown, capo ? tag.dataset.sound : null);
   });
