@@ -650,12 +650,6 @@ function renderChordInspector(shownSymbol, soundingSymbol){
   document.getElementById('chordInspector').classList.add('open');
 }
 document.getElementById('ciClose').onclick = () => document.getElementById('chordInspector').classList.remove('open');
-
-function openTabFullscreen(name, values, maxCol){
-  document.getElementById('tfmTitle').textContent = name || 'Tab';
-  document.getElementById('tfmBody').innerHTML = buildTabSVG(values, maxCol, true);
-  document.getElementById('tabFullscreenModal').classList.add('open');
-}
 document.getElementById('tfmClose').onclick = () => document.getElementById('tabFullscreenModal').classList.remove('open');
 
 /* =========================================================
@@ -1557,17 +1551,58 @@ function pulseStrum(song){
   }, beatMs);
 }
 
+function buildChordLyricLinesHTML(sec, capo){
+  return sec.lines.map(line => {
+    const lyricHTML = line.lyric ? line.lyric : '&nbsp;';
+    const chordsHTML = line.chords.map(c => {
+      const shown = capo ? transposeChord(c.s, -capo) : c.s;
+      return `<span class="chord-tag" style="left:${c.pos}ch" data-shown="${shown}" data-sound="${c.s}">${shown}</span>`;
+    }).join('');
+    return `<div class="cl-line">${chordsHTML}<span class="cl-lyric ${line.lyric?'':'empty'}">${lyricHTML}</span></div>`;
+  }).join('');
+}
+
+function openChordFullscreen(name, sec, capo){
+  document.getElementById('tfmTitle').textContent = name || 'Akorlar';
+  const body = document.getElementById('tfmBody');
+  body.style.alignItems = 'flex-start';
+  const fsize = Math.max(state.fontSize, 17);
+  body.innerHTML = `<div class="chord-lyric-block" style="font-size:${fsize}px; width:max-content;">${buildChordLyricLinesHTML(sec, capo)}</div>`;
+  body.querySelectorAll('.chord-tag').forEach(tag => {
+    tag.onclick = () => renderChordInspector(tag.dataset.shown, capo ? tag.dataset.sound : null);
+  });
+  document.getElementById('tabFullscreenModal').classList.add('open');
+}
+
+function openTabFullscreen(name, values, maxCol){
+  document.getElementById('tfmTitle').textContent = name || 'Tab';
+  const body = document.getElementById('tfmBody');
+  body.style.alignItems = 'center';
+  body.innerHTML = buildTabSVG(values, maxCol, true);
+  document.getElementById('tabFullscreenModal').classList.add('open');
+}
+
 function renderSheet(song){
   const wrap = document.getElementById('sheetWrap');
   const capo = state.capo;
+  const FS_BTN = (idx) => `<button class="tab-fullscreen-btn" data-idx="${idx}">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 1-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></svg>
+    Tam Ekran</button>`;
+  const bindFullscreenBtns = () => {
+    wrap.querySelectorAll('.tab-fullscreen-btn').forEach(btn => {
+      btn.onclick = () => {
+        const sec = song.sections[+btn.dataset.idx];
+        if(sec.tabGrid) openTabFullscreen(sec.name, sec.tabGrid.values, sec.tabGrid.maxCol);
+        else if(sec.lines) openChordFullscreen(sec.name, sec, capo);
+      };
+    });
+  };
 
   if(state.mode === 'tab'){
     wrap.innerHTML = song.sections.map((sec, idx) => {
       if(sec.tabGrid){
         return `<div class="sheet-section"><div class="sheet-section-label">${sec.name}</div>
-          <div class="tab-block-wrap"><button class="tab-fullscreen-btn" data-idx="${idx}">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 1-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></svg>
-            Tam Ekran</button>
+          <div class="tab-block-wrap">${FS_BTN(idx)}
           <div class="tab-block" style="overflow-x:auto;">${buildTabSVG(sec.tabGrid.values, sec.tabGrid.maxCol)}</div></div></div>`;
       } else if(sec.tab){
         return `<div class="sheet-section"><div class="sheet-section-label">${sec.name}</div>
@@ -1577,12 +1612,7 @@ function renderSheet(song){
           <div class="tab-block" style="opacity:.55;">Bu bölüm için tab yok — "Akorlar" görünümünü kullan.</div></div>`;
       }
     }).join('');
-    wrap.querySelectorAll('.tab-fullscreen-btn').forEach(btn => {
-      btn.onclick = () => {
-        const sec = song.sections[+btn.dataset.idx];
-        openTabFullscreen(sec.name, sec.tabGrid.values, sec.tabGrid.maxCol);
-      };
-    });
+    bindFullscreenBtns();
     return;
   }
 
@@ -1590,9 +1620,7 @@ function renderSheet(song){
     if(!sec.lines){
       if(sec.tabGrid){
         return `<div class="sheet-section"><div class="sheet-section-label">${sec.name}</div>
-          <div class="tab-block-wrap"><button class="tab-fullscreen-btn" data-idx="${idx}">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 1-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4"/></svg>
-            Tam Ekran</button>
+          <div class="tab-block-wrap">${FS_BTN(idx)}
           <div class="tab-block" style="overflow-x:auto;">${buildTabSVG(sec.tabGrid.values, sec.tabGrid.maxCol)}</div></div></div>`;
       }
       if(sec.tab){
@@ -1601,27 +1629,16 @@ function renderSheet(song){
       }
       return '';
     }
-    const lines = sec.lines.map(line => {
-      const lyricHTML = line.lyric ? line.lyric : '&nbsp;';
-      const chordsHTML = line.chords.map(c => {
-        const shown = capo ? transposeChord(c.s, -capo) : c.s;
-        return `<span class="chord-tag" style="left:${c.pos}ch" data-shown="${shown}" data-sound="${c.s}">${shown}</span>`;
-      }).join('');
-      return `<div class="cl-line">${chordsHTML}<span class="cl-lyric ${line.lyric?'':'empty'}">${lyricHTML}</span></div>`;
-    }).join('');
+    const lines = buildChordLyricLinesHTML(sec, capo);
     return `<div class="sheet-section"><div class="sheet-section-label">${sec.name}</div>
-      <div class="chord-lyric-block">${lines}</div></div>`;
+      <div class="tab-block-wrap">${FS_BTN(idx)}
+      <div class="chord-lyric-block">${lines}</div></div></div>`;
   }).join('');
 
   wrap.querySelectorAll('.chord-tag').forEach(tag => {
     tag.onclick = () => renderChordInspector(tag.dataset.shown, capo ? tag.dataset.sound : null);
   });
-  wrap.querySelectorAll('.tab-fullscreen-btn').forEach(btn => {
-    btn.onclick = () => {
-      const sec = song.sections[+btn.dataset.idx];
-      openTabFullscreen(sec.name, sec.tabGrid.values, sec.tabGrid.maxCol);
-    };
-  });
+  bindFullscreenBtns();
 }
 
 /* =========================================================
