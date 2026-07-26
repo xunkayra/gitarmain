@@ -1442,81 +1442,81 @@ function renderSong(){
   const sv = document.getElementById('view-song');
 
   sv.innerHTML = `
-    <div class="song-header" style="background:linear-gradient(160deg, ${song.colors[0]}, ${song.colors[1]})">
-      <button class="back-btn" id="backBtn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
-        Ana Sayfa
-      </button>
-      ${song.custom ? `<button class="delete-song-btn" id="deleteSongBtn">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>
-        Sil
-      </button>` : ''}
-      <div class="song-art-lg" style="background:linear-gradient(155deg, ${song.colors[0]}, ${song.colors[1]})">
-        <div class="wave">${waveformBars(song.id, 9)}</div>
-      </div>
-      <div class="song-head-info">
-        <div class="song-type">${song.genre}</div>
-        <div class="song-title-lg">${song.title}</div>
-        <div class="song-meta-row">
-          <span class="song-meta-item">${song.artist}</span>
-          <span class="meta-pill">Ton: ${song.key}</span>
-          <span class="meta-pill">${song.tempo} BPM</span>
-          <span class="meta-pill">${song.difficulty}</span>
-          <span class="meta-pill">${song.duration}</span>
-          ${song.capoSuggest ? `<span class="meta-pill">Önerilen Kapo: ${song.capoSuggest}</span>` : ''}
-        </div>
-      </div>
-    </div>
-
-    <div class="control-bar">
-      <div class="seg" id="modeSeg">
-        <button data-mode="chords" class="${state.mode==='chords'?'active':''}">Akorlar</button>
-        <button data-mode="tab" class="${state.mode==='tab'?'active':''}">Tab</button>
-      </div>
-
-      <div class="ctrl-group">
-        <span class="ctrl-label">Kapo</span>
-        <div class="stepper">
-          <button id="capoMinus">–</button>
-          <span class="val" id="capoVal">${state.capo}</span>
-          <button id="capoPlus">+</button>
-        </div>
-      </div>
-
-      <div class="ctrl-group">
-        <span class="ctrl-label">Yazı</span>
-        <div class="stepper">
-          <button id="fsMinus">–</button>
-          <span class="val" id="fsVal">${state.fontSize}</span>
-          <button id="fsPlus">+</button>
-        </div>
-      </div>
-
-      <div class="ctrl-group strum-strip" id="strumStrip">
-        <span class="ctrl-label" style="margin-right:2px;">Ritim</span>
-        ${song.strum.map(t => `<div class="strum-note">${t==='D'?'↓':t==='U'?'↑':'·'}</div>`).join('')}
-      </div>
-
-      ${song.youtube ? `<div class="ctrl-group">
-        <button class="yt-toggle" id="ytToggle">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 8l6 4-6 4V8z"/><rect x="2" y="4" width="20" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
-          ${state.showVideo ? 'Videoyu Gizle' : 'Videoyu Göster'}
-        </button>
-      </div>` : ''}
-
-      <div class="ctrl-group" style="margin-left:auto;">
-        <button class="autoscroll-btn" id="autoscrollBtn">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" id="playIcon"><path d="M8 5v14l11-7z"/></svg>
-          <span id="autoscrollLabel">Otomatik Kaydır</span>
-        </button>
-        <div class="speed-slider">
-          <span class="ctrl-label">Hız</span>
-          <input type="range" min="1" max="10" value="${scrollSpeed}" id="speedRange">
-        </div>
-      </div>
-    </div>
-
     <div class="song-scroll" id="songScroll">
+      <div class="song-header" style="background:linear-gradient(160deg, ${song.colors[0]}, ${song.colors[1]})">
+        <button class="back-btn" id="backBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          Ana Sayfa
+        </button>
+        ${song.custom ? `<button class="delete-song-btn" id="deleteSongBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/></svg>
+          Sil
+        </button>` : ''}
+        <div class="song-art-lg" style="background:linear-gradient(155deg, ${song.colors[0]}, ${song.colors[1]})">
+          <div class="wave">${waveformBars(song.id, 9)}</div>
+        </div>
+        <div class="song-head-info">
+          <div class="song-type">${song.genre}</div>
+          <div class="song-title-lg">${song.title}</div>
+          <div class="song-meta-row">
+            <span class="song-meta-item">${song.artist}</span>
+            <span class="meta-pill">Ton: ${song.key}</span>
+            <span class="meta-pill">${song.tempo} BPM</span>
+            <span class="meta-pill">${song.difficulty}</span>
+            <span class="meta-pill">${song.duration}</span>
+            ${song.capoSuggest ? `<span class="meta-pill">Önerilen Kapo: ${song.capoSuggest}</span>` : ''}
+          </div>
+        </div>
+      </div>
+
+      <div class="control-bar">
+        <div class="seg" id="modeSeg">
+          <button data-mode="chords" class="${state.mode==='chords'?'active':''}">Akorlar</button>
+          <button data-mode="tab" class="${state.mode==='tab'?'active':''}">Tab</button>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Kapo</span>
+          <div class="stepper">
+            <button id="capoMinus">–</button>
+            <span class="val" id="capoVal">${state.capo}</span>
+            <button id="capoPlus">+</button>
+          </div>
+        </div>
+
+        <div class="ctrl-group">
+          <span class="ctrl-label">Yazı</span>
+          <div class="stepper">
+            <button id="fsMinus">–</button>
+            <span class="val" id="fsVal">${state.fontSize}</span>
+            <button id="fsPlus">+</button>
+          </div>
+        </div>
+
+        <div class="ctrl-group strum-strip" id="strumStrip">
+          <span class="ctrl-label" style="margin-right:2px;">Ritim</span>
+          ${song.strum.map(t => `<div class="strum-note">${t==='D'?'↓':t==='U'?'↑':'·'}</div>`).join('')}
+        </div>
+
+        ${song.youtube ? `<div class="ctrl-group">
+          <button class="yt-toggle" id="ytToggle">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M10 8l6 4-6 4V8z"/><rect x="2" y="4" width="20" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+            ${state.showVideo ? 'Videoyu Gizle' : 'Videoyu Göster'}
+          </button>
+        </div>` : ''}
+
+        <div class="ctrl-group" style="margin-left:auto;">
+          <button class="autoscroll-btn" id="autoscrollBtn">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" id="playIcon"><path d="M8 5v14l11-7z"/></svg>
+            <span id="autoscrollLabel">Otomatik Kaydır</span>
+          </button>
+          <div class="speed-slider">
+            <span class="ctrl-label">Hız</span>
+            <input type="range" min="1" max="10" value="${scrollSpeed}" id="speedRange">
+          </div>
+        </div>
+      </div>
+
       ${song.youtube && state.showVideo ? `<div class="yt-embed-wrap"><iframe src="https://www.youtube.com/embed/${song.youtube}" title="${song.title}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>` : ''}
       <div class="sheet-wrap" id="sheetWrap"></div>
     </div>
@@ -1592,6 +1592,14 @@ function wrapLineToWidth(line, maxChars){
     start = end;
   }
   return out;
+}
+
+function getWrapMaxChars(fontSizePx){
+  const wrap = document.getElementById('sheetWrap');
+  const containerWidth = (wrap && wrap.clientWidth) ? wrap.clientWidth : (window.innerWidth - 60);
+  const usable = containerWidth - 50;
+  const charWidth = fontSizePx * 0.62;
+  return Math.max(14, Math.floor(usable / charWidth));
 }
 
 function buildWrappedChordLyricLinesHTML(sec, capo, maxChars){
@@ -1671,7 +1679,8 @@ function renderSheet(song){
       }
       return '';
     }
-    const lines = buildChordLyricLinesHTML(sec, capo);
+    const maxChars = getWrapMaxChars(state.fontSize);
+    const lines = buildWrappedChordLyricLinesHTML(sec, capo, maxChars);
     return `<div class="sheet-section"><div class="sheet-section-label">${sec.name}</div>
       <div class="tab-block-wrap">${FS_BTN(idx)}
       <div class="chord-lyric-block">${lines}</div></div></div>`;
@@ -1780,6 +1789,19 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
 /* =========================================================
    BOOT
 ========================================================= */
+let resizeReflowTimer = null;
+function handleViewportChange(){
+  clearTimeout(resizeReflowTimer);
+  resizeReflowTimer = setTimeout(() => {
+    if(state.view === 'song' && state.songId){
+      const song = SONGS.find(s => s.id === state.songId);
+      if(song) renderSheet(song);
+    }
+  }, 200);
+}
+window.addEventListener('resize', handleViewportChange);
+window.addEventListener('orientationchange', handleViewportChange);
+
 loadCustomSongs();
 </script>
 </body>
